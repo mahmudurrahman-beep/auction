@@ -1,0 +1,25 @@
+name: auction
+services:
+  - name: web
+    type: web
+    ports:
+      - port: 8000
+        http:
+          paths:
+            - /
+    build:
+      builder: paketobuildpacks/builder:base
+    healthcheck:
+      http:
+        path: /
+      interval: 60s
+      timeout: 30s
+      initial_delay: 30s
+    env:
+      - name: DJANGO_SETTINGS_MODULE
+        value: commerce.settings
+      - name: PYTHONPATH
+        value: /workspace
+    routes:
+      - path: /
+        port: 8000
