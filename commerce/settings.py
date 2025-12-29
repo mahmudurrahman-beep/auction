@@ -136,3 +136,9 @@ DEFAULT_FROM_EMAIL = "no-reply@yourdomain.com"
 
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
+CSRF_TRUSTED_ORIGINS = [
+    "https://*.github.dev",
+    "https://*.preview.app.github.dev",
+]
+
+
