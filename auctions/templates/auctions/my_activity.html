@@ -1,0 +1,125 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+{% load dict_extras %}
+{% block title %}My Activity{% endblock %}
+
+{% block body %}
+
+<!-- Row: Won Auctions (left) + My Bids (right) -->
+<div class="row mb-4">
+  <div class="col-lg-8">
+    <h3 class="mb-3">Won Auctions</h3>
+    {% if won_listings %}
+      <div class="row row-cols-1 row-cols-md-2 g-3">
+        {% for listing in won_listings %}
+          <div class="col">
+            <div class="card h-100">
+              {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" class="card-img-top" style="height:160px; object-fit:cover;" alt="{{ listing.title }}">
+              {% else %}
+                <img src="{% static 'auctions/default.png' %}" class="card-img-top" style="height:160px; object-fit:cover;" alt="No image">
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ listing.title }}</h5>
+                <p class="card-text text-truncate">{{ listing.description|truncatewords:18 }}</p>
+                <p class="mb-1"><strong>Final Price:</strong> ${{ listing.current_price }}</p>
+                <p class="mb-1"><small class="text-muted">Closed</small></p>
+                <a href="{% url 'listing' listing.id %}" class="btn btn-primary btn-sm">View Listing</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">You have not won any auctions yet.</div>
+    {% endif %}
+  </div>
+
+  <div class="col-lg-4">
+    <h3 class="mb-3">My Bids</h3>
+    {% if my_bids %}
+      <div class="list-group">
+        {% for bid in my_bids %}
+          <a href="{% url 'listing' bid.listing.id %}" class="list-group-item list-group-item-action">
+            <div class="d-flex w-100 justify-content-between">
+              <h6 class="mb-1">{{ bid.listing.title }}</h6>
+              <small class="text-muted">${{ bid.amount }}</small>
+            </div>
+            <p class="mb-1 text-truncate">{{ bid.listing.description|truncatewords:12 }}</p>
+            <small class="text-muted">Placed: {{ bid.timestamp }}</small>
+
+            {% with user_top=highest_map|get_item:bid.listing.id %}
+              {% if user_top and user_top == bid.amount %}
+                <div><small class="badge bg-success mt-1">Your highest on this listing</small></div>
+              {% endif %}
+            {% endwith %}
+          </a>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">You have not placed any bids yet.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Row: My Listings Active -->
+<div class="row mb-4">
+  <div class="col-12">
+    <h3 class="mb-3">My Listings — Active</h3>
+    {% if listings_created_active %}
+      <div class="row row-cols-1 row-cols-md-2 g-3">
+        {% for listing in listings_created_active %}
+          <div class="col">
+            <div class="card h-100">
+              {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" class="card-img-top" style="height:160px; object-fit:cover;" alt="{{ listing.title }}">
+              {% else %}
+                <img src="{% static 'auctions/default.png' %}" class="card-img-top" style="height:160px; object-fit:cover;" alt="No image">
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ listing.title }}</h5>
+                <p class="card-text text-truncate">{{ listing.description|truncatewords:18 }}</p>
+                <p class="mb-1"><strong>Status:</strong> Active</p>
+                <a href="{% url 'listing' listing.id %}" class="btn btn-primary btn-sm">View / Manage</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">You have no active listings.</div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Row: My Listings Closed -->
+<div class="row mb-4">
+  <div class="col-12">
+    <h3 class="mb-3">My Listings — History</h3>
+    {% if listings_created_closed %}
+      <div class="row row-cols-1 row-cols-md-2 g-3">
+        {% for listing in listings_created_closed %}
+          <div class="col">
+            <div class="card h-100">
+              {% if listing.image_url %}
+                <img src="{{ listing.image_url }}" class="card-img-top" style="height:160px; object-fit:cover;" alt="{{ listing.title }}">
+              {% else %}
+                <img src="{% static 'auctions/default.png' %}" class="card-img-top" style="height:160px; object-fit:cover;" alt="No image">
+              {% endif %}
+              <div class="card-body">
+                <h5 class="card-title">{{ listing.title }}</h5>
+                <p class="card-text text-truncate">{{ listing.description|truncatewords:18 }}</p>
+                <p class="mb-1"><strong>Status:</strong> Closed</p>
+                <a href="{% url 'listing' listing.id %}" class="btn btn-outline-secondary btn-sm">View</a>
+              </div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="alert alert-info">No closed listings in your history.</div>
+    {% endif %}
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,93 @@
+{% extends "auctions/layout.html" %}
+{% load form_tags %}
+
+{% block body %}
+  <h2>Listing: {{ listing.title }}</h2>
+
+  {% if listing.image_url %}
+    <img src="{{ listing.image_url }}" class="img-fluid mb-3 card-img-top" alt="{{ listing.title }}">
+  {% endif %}
+
+  <p>{{ listing.description|linebreaks }}</p>
+  <p><strong>Current Price:</strong> ${{ current_price }}</p>
+  <p><strong>Highest Bidder:</strong>
+    {% if winner_bid %}
+      {{ winner_bid.bidder.username }}
+    {% else %}
+      No bids yet
+    {% endif %}
+  </p>
+  <p><strong>Listed by:</strong> {{ listing.owner.username }}</p>
+  <p><strong>Category:</strong>
+    {% if listing.category %}
+      {{ listing.category.name }}
+    {% else %}
+      No Category Listed
+    {% endif %}
+  </p>
+  <p><strong>Status:</strong> {% if listing.active %}Active{% else %}Closed{% endif %}</p>
+
+  {% if not listing.active %}
+    <div class="alert alert-secondary">
+      This listing is closed.
+      {% if user_won %}
+        <strong>Congratulations — you won this auction.</strong>
+      {% elif winner_user %}
+        Winner: {{ winner_user.username }} — ${{ winner_bid.amount }}
+      {% else %}
+        No bids were placed.
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {% if error %}
+    <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+  {% if success %}
+    <div class="alert alert-success">{{ success }}</div>
+  {% endif %}
+
+  {% if user.is_authenticated %}
+    <form method="post" class="mb-3">
+      {% csrf_token %}
+      <button name="toggle_watch" class="btn btn-secondary">
+        {% if in_watchlist %}Remove from Watchlist{% else %}Add to Watchlist{% endif %}
+      </button>
+      {% if user == listing.owner and listing.active %}
+        <button name="close_listing" class="btn btn-danger">Close Auction</button>
+      {% endif %}
+    </form>
+
+    {% if listing.active %}
+      <h4>Place a Bid</h4>
+      <form method="post" class="form-inline mb-3">
+        {% csrf_token %}
+        {{ bid_form.amount|add_class:"form-control d-inline-block w-50" }}
+        <button name="place_bid" class="btn btn-primary ms-2">Place Bid</button>
+      </form>
+    {% endif %}
+
+    <h4>Comments</h4>
+    <form method="post" class="mb-3">
+      {% csrf_token %}
+      {{ comment_form.content|add_class:"form-control" }}
+      <button name="add_comment" class="btn btn-primary mt-2">Add Comment</button>
+    </form>
+  {% else %}
+    <p><a href="{% url 'login' %}">Log in</a> to bid, comment, or add to your watchlist.</p>
+  {% endif %}
+
+  <hr>
+  <h5>All Comments</h5>
+  {% for comment in listing.comments.all %}
+    <div class="card mb-2">
+      <div class="card-body">
+        <strong>{{ comment.commenter.username }}</strong>
+        <small class="text-muted">{{ comment.timestamp }}</small>
+        <p class="mb-0">{{ comment.content }}</p>
+      </div>
+    </div>
+  {% empty %}
+    <p>No comments yet.</p>
+  {% endfor %}
+{% endblock %}

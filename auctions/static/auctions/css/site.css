@@ -1,0 +1,55 @@
+/* site.css - logo-only navbar and hero tweaks */
+
+/* Logo only (no orange circle) */
+.logo-only{
+  width:56px;
+  height:auto;
+  display:block;
+  object-fit:contain;
+}
+
+/* Adjust navbar brand spacing when only logo is present */
+.navbar .navbar-brand{
+  padding-left: 0.25rem;
+  padding-right: 0.5rem;
+  margin-right: 0.5rem;
+}
+
+/* Tighten nav item spacing to balance brand */
+.navbar-nav .nav-item .nav-link{
+  padding-left: 0.6rem;
+  padding-right: 0.6rem;
+}
+
+/* Hero styling */
+.hero{
+  background: linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.6)), #0b0b0b;
+  margin-bottom: 1.5rem;
+}
+
+.hero-card{
+  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  border-radius: 12px;
+}
+
+/* CTA orange */
+.btn-warning{
+  background: #ff7a00;
+  border-color: #ff7a00;
+  color: #fff;
+}
+.btn-warning:hover{
+  background: #ff6a00;
+  border-color: #ff6a00;
+}
+
+/* Footer small text */
+footer small{
+  opacity: 0.85;
+}
+
+/* Responsive tweaks */
+@media (max-width: 991px){
+  .hero-card{ display:none; }
+  .logo-only{ width:44px; }
+}

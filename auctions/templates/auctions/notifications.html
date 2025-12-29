@@ -1,0 +1,160 @@
+{% extends "auctions/layout.html" %}
+{% load static %}
+{% block title %}Notifications{% endblock %}
+
+{% block body %}
+  <div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Notifications</h2>
+    <form method="post" class="mb-0">
+      {% csrf_token %}
+      <button name="mark_all_read" value="1" class="btn btn-sm btn-outline-secondary">Mark all read</button>
+    </form>
+  </div>
+
+  {% if notifications %}
+    <div class="list-group">
+      {% for n in notifications %}
+        <div class="list-group-item {% if not n.read %}list-group-item-warning{% endif %} d-flex flex-column">
+          <div class="d-flex w-100 justify-content-between align-items-start">
+            <div>
+              <h6 class="mb-1">{{ n.title }}</h6>
+              <small class="text-muted">{{ n.created_at }}</small>
+            </div>
+            <div class="ms-3 text-end">
+              {% if n.url %}
+                <a href="{{ n.url }}" class="btn btn-sm btn-outline-primary mb-1">View listing</a>
+              {% endif %}
+            </div>
+          </div>
+
+          <p class="mb-2">{{ n.message }}</p>
+
+          {% if n.owner_email %}
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+              {% comment %}
+                Show "Contact bidder" for bid notifications (we detect by message text),
+                otherwise show "Contact auction owner".
+                This avoids changing models or views.
+              {% endcomment %}
+              {% if "placed a bid" in n.message %}
+                <a href="mailto:{{ n.owner_email }}?subject=Regarding%20your%20bid%20on%20{{ n.listing.title|urlencode }}" class="btn btn-sm btn-outline-primary">
+                  Contact bidder
+                </a>
+              {% else %}
+                <a href="mailto:{{ n.owner_email }}?subject=Regarding%20auction%20{{ n.listing.title|urlencode }}" class="btn btn-sm btn-outline-primary">
+                  Contact auction owner
+                </a>
+              {% endif %}
+
+              <div class="input-group input-group-sm" style="max-width: 360px;">
+                <input id="owner-email-{{ forloop.counter }}" class="form-control form-control-sm" type="text"
+                       value="{{ n.owner_email }}" readonly aria-label="Contact email">
+                <button id="copy-btn-{{ forloop.counter }}" class="btn btn-outline-secondary" type="button"
+                        onclick="copyOwnerEmail('owner-email-{{ forloop.counter }}', 'copy-btn-{{ forloop.counter }}', 'copied-msg-{{ forloop.counter }}')">
+                  Copy
+                </button>
+              </div>
+
+              <small id="copied-msg-{{ forloop.counter }}" class="text-success ms-2 visually-hidden">Copied</small>
+            </div>
+          {% endif %}
+
+          <hr class="my-2">
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">You have no notifications.</div>
+  {% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+  <script>
+    // Copy owner email to clipboard with fallbacks and brief UI feedback
+    function copyOwnerEmail(inputId, btnId, msgId) {
+      try {
+        const input = document.getElementById(inputId);
+        const btn = document.getElementById(btnId);
+        const msg = document.getElementById(msgId);
+        if (!input) return;
+
+        const text = input.value || input.getAttribute('value') || '';
+        if (!text) return;
+
+        // Preferred modern API
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          navigator.clipboard.writeText(text).then(() => {
+            showCopiedFeedback(btn, msg);
+          }).catch(() => {
+            fallbackCopy(input, btn, msg);
+          });
+        } else {
+          fallbackCopy(input, btn, msg);
+        }
+      } catch (err) {
+        console.error('Copy failed', err);
+      }
+    }
+
+    // Fallback using selection + execCommand for older browsers
+    function fallbackCopy(input, btn, msg) {
+      try {
+        // If input is not visible or selectable, create a temporary textarea
+        let useTemp = false;
+        if (input.offsetParent === null) {
+          useTemp = true;
+        }
+
+        if (useTemp) {
+          const tmp = document.createElement('textarea');
+          tmp.value = input.value;
+          tmp.style.position = 'fixed';
+          tmp.style.left = '-9999px';
+          document.body.appendChild(tmp);
+          tmp.select();
+          tmp.setSelectionRange(0, tmp.value.length);
+          document.execCommand('copy');
+          document.body.removeChild(tmp);
+        } else {
+          input.select();
+          input.setSelectionRange(0, 99999);
+          document.execCommand('copy');
+          // Deselect
+          window.getSelection().removeAllRanges();
+        }
+        showCopiedFeedback(btn, msg);
+      } catch (err) {
+        console.error('Fallback copy failed', err);
+      }
+    }
+
+    // Visual feedback: show "Copied" text and briefly style the button
+    function showCopiedFeedback(btn, msg) {
+      try {
+        if (msg) {
+          msg.classList.remove('visually-hidden');
+          setTimeout(() => msg.classList.add('visually-hidden'), 1800);
+        }
+        if (btn) {
+          btn.classList.add('btn-success');
+          setTimeout(() => btn.classList.remove('btn-success'), 1200);
+        }
+      } catch (err) {
+        console.error('Feedback display failed', err);
+      }
+    }
+
+    // Optional: allow clicking the readonly input to select the whole email for manual copy
+    document.addEventListener('click', function(e) {
+      const el = e.target;
+      if (el && el.tagName === 'INPUT' && el.hasAttribute('readonly') && el.id && el.id.startsWith('owner-email-')) {
+        try {
+          el.select();
+          el.setSelectionRange(0, 99999);
+        } catch (err) {
+          // ignore
+        }
+      }
+    });
+  </script>
+{% endblock %}
