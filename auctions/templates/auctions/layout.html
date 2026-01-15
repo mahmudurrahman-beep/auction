@@ -5,6 +5,15 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>{% block title %}Auction{% endblock %}</title>
+  
+  <!-- Favicon Configuration -->
+  <link rel="icon" href="{% static 'auctions/icons/favicon.ico' %}" sizes="any">
+  <link rel="icon" href="{% static 'auctions/icons/favicon.svg' %}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{% static 'auctions/icons/apple-touch-icon.png' %}">
+  <link rel="manifest" href="{% static 'auctions/icons/site.webmanifest' %}">
+  <meta name="theme-color" content="#ffffff">
+  
+  <!-- CSS Imports -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="{% static 'auctions/css/site-textlogo.css' %}" rel="stylesheet">
   <style>
